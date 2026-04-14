@@ -1,0 +1,10 @@
+name = "arty-contact-worker"
+main = "contact-worker.ts"
+compatibility_date = "2026-04-09"
+workers_dev = true
+
+[vars]
+# Replace with your production domain. Use "*" only during early setup/testing.
+ALLOWED_ORIGIN = "https://artys-studio.com,http://localhost:5173"
+RESEND_FROM = "inquiries@artys-studio.com"
+RESEND_TO = "rohan@artys-studio.com"

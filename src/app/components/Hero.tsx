@@ -1,0 +1,451 @@
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
+import gsap from "gsap";
+import { X } from "lucide-react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
+
+const LazyCosmicScene = lazy(async () => {
+  const module = await import("./hero-cosmic/CosmicScene");
+  return { default: module.CosmicScene };
+});
+
+const LazyCosmicTextReveal = lazy(async () => {
+  const module = await import("./hero-cosmic/CosmicTextReveal");
+  return { default: module.CosmicTextReveal };
+});
+
+const HERO_LINES = ["3D VISUALIZATION", "PARTNER FOR", "CREATIVE STUDIOS"];
+const HERO_ASSET_ENABLED = import.meta.env.VITE_ENABLE_HERO_ASSET === "true";
+const SHOWREEL_EMBED_ID = (import.meta.env.VITE_SHOWREEL_EMBED_ID ?? "").trim();
+
+interface PointerSetters {
+  sceneX?: (value: number) => void;
+  sceneY?: (value: number) => void;
+  wandX?: (value: number) => void;
+  wandY?: (value: number) => void;
+}
+
+interface HeroProps {
+  introReady?: boolean;
+}
+
+export function Hero({ introReady = true }: HeroProps) {
+  const shouldReduceMotion = useReducedMotion();
+  const [isHeadlineHovered, setIsHeadlineHovered] = useState(false);
+  const [isModelInteractive, setIsModelInteractive] = useState(false);
+  const [isSceneElevated, setIsSceneElevated] = useState(false);
+  const [isHeroSceneActive, setIsHeroSceneActive] = useState(true);
+  const [isShowreelOpen, setIsShowreelOpen] = useState(false);
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const headlineRef = useRef<HTMLDivElement>(null);
+  const hoverTimerRef = useRef<number | null>(null);
+
+  const scenePointerRef = useRef({ x: 0, y: 0 });
+  const wandPointerRef = useRef({ x: 0.5, y: 0.5 });
+  const pointerSettersRef = useRef<PointerSetters>({});
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const assetOpacity = useTransform(scrollYProgress, [0, 0.36, 0.74], [1, 0.9, 0]);
+  const assetY = useTransform(scrollYProgress, [0, 1], [0, 110]);
+
+  useEffect(() => {
+    pointerSettersRef.current.sceneX = gsap.quickTo(scenePointerRef.current, "x", {
+      duration: 0.42,
+      ease: "power3.out",
+    });
+    pointerSettersRef.current.sceneY = gsap.quickTo(scenePointerRef.current, "y", {
+      duration: 0.42,
+      ease: "power3.out",
+    });
+    pointerSettersRef.current.wandX = gsap.quickTo(wandPointerRef.current, "x", {
+      duration: 0.24,
+      ease: "power3.out",
+    });
+    pointerSettersRef.current.wandY = gsap.quickTo(wandPointerRef.current, "y", {
+      duration: 0.24,
+      ease: "power3.out",
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current !== null) {
+        window.clearTimeout(hoverTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isModelInteractive) {
+      setIsSceneElevated(true);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setIsSceneElevated(false);
+    }, 620);
+
+    return () => window.clearTimeout(timer);
+  }, [isModelInteractive]);
+
+  useEffect(() => {
+    if (shouldReduceMotion) {
+      return;
+    }
+
+    if (HERO_ASSET_ENABLED) {
+      void import("./hero-cosmic/CosmicScene");
+    }
+    void import("./hero-cosmic/CosmicTextReveal");
+  }, [shouldReduceMotion]);
+
+  useEffect(() => {
+    if (!isShowreelOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsShowreelOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isShowreelOpen]);
+
+  const clearHoverTimer = () => {
+    if (hoverTimerRef.current !== null) {
+      window.clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  };
+
+  useMotionValueEvent(scrollYProgress, "change", (value) => {
+    if (value > 0.55) {
+      clearHoverTimer();
+      setIsHeadlineHovered(false);
+      setIsModelInteractive(false);
+    }
+
+    if (value > 0.7 && isHeroSceneActive) {
+      setIsHeroSceneActive(false);
+    } else if (value < 0.45 && !isHeroSceneActive) {
+      setIsHeroSceneActive(true);
+    }
+  });
+
+  const updateScenePointer = (clientX: number, clientY: number) => {
+    const section = sectionRef.current;
+    if (!section) {
+      return;
+    }
+
+    const bounds = section.getBoundingClientRect();
+    const normalizedX = ((clientX - bounds.left) / Math.max(bounds.width, 1)) * 2 - 1;
+    const normalizedY = -(((clientY - bounds.top) / Math.max(bounds.height, 1)) * 2 - 1);
+
+    pointerSettersRef.current.sceneX?.(normalizedX);
+    pointerSettersRef.current.sceneY?.(normalizedY);
+  };
+
+  const updateWandPointer = (clientX: number, clientY: number) => {
+    const target = headlineRef.current;
+    if (!target) {
+      return;
+    }
+
+    const bounds = target.getBoundingClientRect();
+    const x = (clientX - bounds.left) / Math.max(bounds.width, 1);
+    const y = (clientY - bounds.top) / Math.max(bounds.height, 1);
+
+    pointerSettersRef.current.wandX?.(Math.min(1, Math.max(0, x)));
+    pointerSettersRef.current.wandY?.(Math.min(1, Math.max(0, y)));
+  };
+
+  const handleHeadlineHoverStart = () => {
+    setIsHeadlineHovered(true);
+    clearHoverTimer();
+
+    if (shouldReduceMotion || !HERO_ASSET_ENABLED) {
+      return;
+    }
+
+    hoverTimerRef.current = window.setTimeout(() => {
+      setIsModelInteractive(true);
+    }, 720);
+  };
+
+  const handleHeadlineHoverEnd = () => {
+    setIsHeadlineHovered(false);
+    clearHoverTimer();
+  };
+
+  const actionHover = shouldReduceMotion ? undefined : { scale: 1.05 };
+  const actionTap = shouldReduceMotion ? undefined : { scale: 0.95 };
+  const revealActive = isHeadlineHovered || isModelInteractive;
+  const showreelEmbedUrl = SHOWREEL_EMBED_ID
+    ? `https://www.youtube.com/embed/${encodeURIComponent(SHOWREEL_EMBED_ID)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`
+    : "";
+  const headlineTone = !introReady
+    ? "rgba(255,255,255,0)"
+    : isModelInteractive
+      ? "rgba(255,255,255,0.2)"
+      : revealActive
+        ? "rgba(255,255,255,0.33)"
+        : "#ffffff";
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      onMouseMove={(event) => updateScenePointer(event.clientX, event.clientY)}
+    >
+      {!shouldReduceMotion && HERO_ASSET_ENABLED && (
+        <motion.div className="absolute inset-0" style={{ opacity: assetOpacity, y: assetY, zIndex: isSceneElevated ? 30 : 0 }}>
+          <motion.div
+            className="absolute inset-0"
+            initial={false}
+            animate={
+              shouldReduceMotion
+                ? { opacity: 1, scale: 1 }
+                : {
+                    opacity: isModelInteractive ? 1 : 0.93,
+                    scale: isModelInteractive ? 1.02 : 0.985,
+                  }
+            }
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Suspense fallback={null}>
+              <LazyCosmicScene
+                interactive={isModelInteractive}
+                pointerRef={scenePointerRef}
+                mode="asset"
+                active={isHeroSceneActive}
+              />
+            </Suspense>
+          </motion.div>
+        </motion.div>
+      )}
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-28 sm:py-32">
+        <motion.div
+          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.7, delay: 0.2 }}
+          className="relative z-40 mb-8 sm:mb-10 text-xs sm:text-sm tracking-[0.22em] uppercase opacity-70"
+        >
+          Arty Studios - Mumbai To Global
+        </motion.div>
+
+        <div
+          ref={headlineRef}
+          className="relative z-20 inline-block cursor-crosshair select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ff6b00]"
+          onMouseEnter={handleHeadlineHoverStart}
+          onMouseLeave={handleHeadlineHoverEnd}
+          onMouseMove={(event) => {
+            updateScenePointer(event.clientX, event.clientY);
+            updateWandPointer(event.clientX, event.clientY);
+          }}
+          onClick={() => {
+            if (HERO_ASSET_ENABLED) {
+              setIsModelInteractive(true);
+            }
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              if (HERO_ASSET_ENABLED) {
+                setIsModelInteractive(true);
+              }
+            }
+          }}
+          role={HERO_ASSET_ENABLED ? "button" : undefined}
+          tabIndex={HERO_ASSET_ENABLED ? 0 : -1}
+          aria-label={HERO_ASSET_ENABLED ? "3D VISUALIZATION PARTNER FOR CREATIVE STUDIOS" : undefined}
+        >
+          <motion.h1
+            id="hero-main-title"
+            initial={shouldReduceMotion ? { y: 0, opacity: 1 } : { y: 120, opacity: 0 }}
+            animate={{ y: 0, opacity: 1, color: headlineTone }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : {
+                    y: { duration: 0.9, delay: 0.45, ease: [0.2, 1, 0.3, 1] },
+                    opacity: { duration: 0.9, delay: 0.45, ease: [0.2, 1, 0.3, 1] },
+                    color: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+                  }
+            }
+            className="text-[clamp(2.85rem,11vw,9.6rem)] leading-[0.9] tracking-[-0.04em]"
+            style={{ fontWeight: 700 }}
+          >
+            {HERO_LINES.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </motion.h1>
+
+          {!shouldReduceMotion && introReady && isHeroSceneActive && (
+            <Suspense fallback={null}>
+              <LazyCosmicTextReveal active={revealActive} lines={HERO_LINES} wandRef={wandPointerRef} />
+            </Suspense>
+          )}
+        </div>
+
+        <motion.p
+          initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { delay: 1.2, duration: 0.7 }}
+          className="relative z-40 mt-5 sm:mt-7 text-xs sm:text-sm uppercase tracking-[0.18em] opacity-70"
+        >
+          {HERO_ASSET_ENABLED
+            ? "Hover the headline to cast the reveal. Hold or click to open the landing asset."
+            : "Hover the headline to cast the reveal."}
+        </motion.p>
+
+        <motion.div
+          initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.75, delay: 1.35 }}
+          className="relative z-40 mt-10 sm:mt-14 flex flex-col sm:flex-row gap-4 sm:gap-7 max-w-sm sm:max-w-none"
+        >
+          <motion.button
+            type="button"
+            className="px-8 sm:px-12 py-4 sm:py-5 bg-white text-black uppercase tracking-widest relative overflow-hidden group text-center text-sm sm:text-base"
+            whileHover={actionHover}
+            whileTap={actionTap}
+            onClick={() => setIsShowreelOpen(true)}
+          >
+            <motion.div
+              className="absolute inset-0 bg-[#ff6b00]"
+              initial={shouldReduceMotion ? { x: 0 } : { x: "-100%" }}
+              whileHover={shouldReduceMotion ? undefined : { x: 0 }}
+              transition={{ duration: 0.32 }}
+            />
+            <span className="relative z-10">View Showreel</span>
+          </motion.button>
+
+          <motion.a
+            href="#contact"
+            className="px-8 sm:px-12 py-4 sm:py-5 border-2 border-white uppercase tracking-widest relative overflow-hidden group text-center text-sm sm:text-base"
+            whileHover={actionHover}
+            whileTap={actionTap}
+          >
+            <motion.div
+              className="absolute inset-0 bg-white"
+              initial={shouldReduceMotion ? { x: 0 } : { x: "-100%" }}
+              whileHover={shouldReduceMotion ? undefined : { x: 0 }}
+              transition={{ duration: 0.32 }}
+            />
+            <span className="relative z-10 group-hover:text-black transition-colors">Let&apos;s Talk</span>
+          </motion.a>
+
+          {HERO_ASSET_ENABLED && isModelInteractive && (
+            <button
+              type="button"
+              onClick={() => setIsModelInteractive(false)}
+              className="px-8 sm:px-10 py-4 sm:py-5 border border-white/40 uppercase tracking-widest text-sm sm:text-base hover:border-white hover:bg-white/10 transition-colors"
+            >
+              Close Asset View
+            </button>
+          )}
+        </motion.div>
+
+        <motion.div
+          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.8, delay: 1.5 }}
+          className="relative z-40 mt-16 sm:mt-24 lg:mt-28 grid grid-cols-1 sm:grid-cols-3 gap-7 sm:gap-9 lg:gap-14 max-w-4xl"
+        >
+          {[
+            { number: "50+", label: "Projects Delivered" },
+            { number: "15+", label: "Global Clients" },
+            { number: "10+", label: "Years Experience" },
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={shouldReduceMotion ? { duration: 0 } : { delay: 1.65 + index * 0.08, duration: 0.55 }}
+              className="border-l-2 border-[#a566ff] pl-6"
+            >
+              <div className="text-4xl sm:text-5xl mb-2" style={{ fontWeight: 700 }}>
+                {stat.number}
+              </div>
+              <div className="text-sm uppercase tracking-wider opacity-65">{stat.label}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+
+      {!shouldReduceMotion && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2, duration: 1 }}
+          className="absolute z-40 bottom-12 left-1/2 -translate-x-1/2 hidden md:block"
+        >
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="w-[1px] h-20 bg-white opacity-40"
+          />
+        </motion.div>
+      )}
+
+      {isShowreelOpen && (
+        <motion.div
+          className="fixed inset-0 z-[130] bg-black/75 backdrop-blur-sm flex items-center justify-center px-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setIsShowreelOpen(false)}
+        >
+          <motion.div
+            className="relative w-full max-w-5xl border border-white/20 bg-[#05050a] shadow-[0_24px_90px_rgba(0,0,0,0.6)]"
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label="Close showreel"
+              className="absolute top-3 right-3 z-10 h-9 w-9 border border-white/25 bg-black/60 text-white flex items-center justify-center hover:border-white transition-colors"
+              onClick={() => setIsShowreelOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="aspect-video w-full bg-black">
+              {showreelEmbedUrl ? (
+                <iframe
+                  src={showreelEmbedUrl}
+                  title="Arty Studios Showreel"
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-center px-6 text-white/80">
+                  Add `VITE_SHOWREEL_EMBED_ID` in your `.env` to load the showreel.
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </section>
+  );
+}
