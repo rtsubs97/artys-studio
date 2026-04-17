@@ -1,4 +1,4 @@
-import{r as f,g as T,j as e}from"./index-L2vrCyeu.js";import{C as B,V as L,u as P,T as U,A as C}from"./react-three-fiber.esm-C0v5C9ej.js";import{s as F}from"./Star2-CXl0uTrW.js";const _=`
+import{r as f,g as T,j as e}from"./index-DKtIf37z.js";import{C as B,V as L,u as P,T as U,A as C}from"./react-three-fiber.esm-DgqON5Bk.js";import{s as F}from"./Star2-CXl0uTrW.js";const _=`
   varying vec2 vUv;
   void main() {
     vUv = uv;

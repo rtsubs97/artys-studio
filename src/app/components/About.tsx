@@ -79,7 +79,7 @@ export function About() {
                   className="text-lg flex items-center gap-4 group cursor-pointer"
                 >
                   <motion.span
-                    className="w-2 h-2 bg-[#ff6b00]"
+                    className="w-2 h-2 bg-[#a566ff]"
                     whileHover={{ scale: 1.5, rotate: 45 }}
                   />
                   <span className="group-hover:translate-x-2 transition-transform duration-300">
@@ -110,7 +110,7 @@ export function About() {
                   className="text-lg flex items-center gap-4 group cursor-pointer"
                 >
                   <motion.span
-                    className="w-2 h-2 bg-[#ff6b00]"
+                    className="w-2 h-2 bg-[#a566ff]"
                     whileHover={{ scale: 1.5, rotate: 45 }}
                   />
                   <span className="group-hover:translate-x-2 transition-transform duration-300">
@@ -149,7 +149,7 @@ export function About() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2, duration: 0.6 }}
-              className="border-l-2 border-[#ff6b00] pl-6"
+              className="border-l-2 border-[#a566ff] pl-6"
             >
               <h4 className="text-2xl mb-4" style={{ fontWeight: 600 }}>{item.title}</h4>
               <p className="opacity-70 leading-relaxed">{item.description}</p>

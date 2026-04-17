@@ -1,10 +1,11 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Menu, X } from "lucide-react";
 
 export function Navigation() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const scrollFrameRef = useRef<number | null>(null);
 
   const navItems = [
     { label: "Work", href: "#work" },
@@ -13,19 +14,80 @@ export function Navigation() {
     { label: "Behance", href: "https://www.behance.net/rohantambe97", external: true },
   ];
 
+  useEffect(() => {
+    return () => {
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+      }
+    };
+  }, []);
+
+  const smoothScrollToHash = (hash: string) => {
+    const target =
+      hash === "#top"
+        ? document.getElementById("top")
+        : document.querySelector<HTMLElement>(hash);
+
+    if (!target) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const startY = window.scrollY;
+    const offset = window.innerWidth < 768 ? 84 : 102;
+    const targetY = Math.max(0, startY + target.getBoundingClientRect().top - offset);
+
+    if (prefersReducedMotion) {
+      window.scrollTo(0, targetY);
+      return;
+    }
+
+    if (scrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(scrollFrameRef.current);
+    }
+
+    const duration = 980;
+    const start = performance.now();
+    const easeInOutCubic = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+    const tick = (now: number) => {
+      const elapsed = Math.min((now - start) / duration, 1);
+      const eased = easeInOutCubic(elapsed);
+      const nextY = startY + (targetY - startY) * eased;
+      window.scrollTo(0, nextY);
+
+      if (elapsed < 1) {
+        scrollFrameRef.current = window.requestAnimationFrame(tick);
+      } else {
+        scrollFrameRef.current = null;
+      }
+    };
+
+    scrollFrameRef.current = window.requestAnimationFrame(tick);
+  };
+
+  const handleNavLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("#")) {
+      event.preventDefault();
+      smoothScrollToHash(href);
+    }
+    setIsMenuOpen(false);
+  };
+
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.8, ease: [0.6, 0.05, 0.01, 0.9] }}
-      className="fixed top-0 left-0 right-0 z-50 px-4 py-4 sm:px-6 md:px-8 md:py-6 flex justify-between items-center relative"
+      className="fixed top-0 left-0 right-0 z-50 px-4 py-4 sm:px-6 md:px-8 md:py-6 flex justify-between items-center bg-black/20 backdrop-blur-md border-b border-white/10"
     >
       <motion.a
         href="#top"
         className="text-2xl tracking-tight"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
-        onClick={() => setIsMenuOpen(false)}
+        onClick={(event) => handleNavLinkClick(event, "#top")}
       >
         <span className="font-bold">ARTY</span>
         <span className="opacity-70"> STUDIOS</span>
@@ -53,7 +115,7 @@ export function Navigation() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 + 0.3 }}
-            onClick={() => setIsMenuOpen(false)}
+            onClick={(event) => handleNavLinkClick(event, item.href)}
             onMouseEnter={() => setHoveredItem(item.label)}
             onMouseLeave={() => setHoveredItem(null)}
           >
@@ -91,7 +153,7 @@ export function Navigation() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="text-sm uppercase tracking-[0.25em] py-2 border-b border-white/10 last:border-b-0"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(event) => handleNavLinkClick(event, item.href)}
               >
                 {item.label}
               </motion.a>

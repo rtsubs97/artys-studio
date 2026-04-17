@@ -193,16 +193,13 @@ export function Hero({ introReady = true }: HeroProps) {
   const actionHover = shouldReduceMotion ? undefined : { scale: 1.05 };
   const actionTap = shouldReduceMotion ? undefined : { scale: 0.95 };
   const revealActive = isHeadlineHovered || isModelInteractive;
+  const ctaPrimaryClass =
+    "px-8 sm:px-12 py-4 sm:py-5 border border-white/80 bg-white text-black uppercase tracking-widest text-center text-sm sm:text-base transition-colors duration-300 hover:bg-[#d5bcff] hover:border-[#d5bcff] hover:text-black";
+  const ctaSecondaryClass =
+    "px-8 sm:px-12 py-4 sm:py-5 border border-white/35 bg-white/8 text-white uppercase tracking-widest text-center text-sm sm:text-base transition-colors duration-300 hover:bg-white hover:text-black hover:border-white";
   const showreelEmbedUrl = SHOWREEL_EMBED_ID
     ? `https://www.youtube.com/embed/${encodeURIComponent(SHOWREEL_EMBED_ID)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`
     : "";
-  const headlineTone = !introReady
-    ? "rgba(255,255,255,0)"
-    : isModelInteractive
-      ? "rgba(255,255,255,0.2)"
-      : revealActive
-        ? "rgba(255,255,255,0.33)"
-        : "#ffffff";
 
   return (
     <section
@@ -249,7 +246,7 @@ export function Hero({ introReady = true }: HeroProps) {
 
         <div
           ref={headlineRef}
-          className="relative z-20 inline-block cursor-crosshair select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ff6b00]"
+          className="relative z-20 inline-block cursor-crosshair select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#a566ff]"
           onMouseEnter={handleHeadlineHoverStart}
           onMouseLeave={handleHeadlineHoverEnd}
           onMouseMove={(event) => {
@@ -276,14 +273,13 @@ export function Hero({ introReady = true }: HeroProps) {
           <motion.h1
             id="hero-main-title"
             initial={shouldReduceMotion ? { y: 0, opacity: 1 } : { y: 120, opacity: 0 }}
-            animate={{ y: 0, opacity: 1, color: headlineTone }}
+            animate={{ y: 0, opacity: 1 }}
             transition={
               shouldReduceMotion
                 ? { duration: 0 }
                 : {
                     y: { duration: 0.9, delay: 0.45, ease: [0.2, 1, 0.3, 1] },
                     opacity: { duration: 0.9, delay: 0.45, ease: [0.2, 1, 0.3, 1] },
-                    color: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
                   }
             }
             className="text-[clamp(2.85rem,11vw,9.6rem)] leading-[0.9] tracking-[-0.04em]"
@@ -322,40 +318,28 @@ export function Hero({ introReady = true }: HeroProps) {
         >
           <motion.button
             type="button"
-            className="px-8 sm:px-12 py-4 sm:py-5 bg-white text-black uppercase tracking-widest relative overflow-hidden group text-center text-sm sm:text-base"
+            className={ctaPrimaryClass}
             whileHover={actionHover}
             whileTap={actionTap}
             onClick={() => setIsShowreelOpen(true)}
           >
-            <motion.div
-              className="absolute inset-0 bg-[#ff6b00]"
-              initial={shouldReduceMotion ? { x: 0 } : { x: "-100%" }}
-              whileHover={shouldReduceMotion ? undefined : { x: 0 }}
-              transition={{ duration: 0.32 }}
-            />
-            <span className="relative z-10">View Showreel</span>
+            View Showreel
           </motion.button>
 
           <motion.a
             href="#contact"
-            className="px-8 sm:px-12 py-4 sm:py-5 border-2 border-white uppercase tracking-widest relative overflow-hidden group text-center text-sm sm:text-base"
+            className={ctaSecondaryClass}
             whileHover={actionHover}
             whileTap={actionTap}
           >
-            <motion.div
-              className="absolute inset-0 bg-white"
-              initial={shouldReduceMotion ? { x: 0 } : { x: "-100%" }}
-              whileHover={shouldReduceMotion ? undefined : { x: 0 }}
-              transition={{ duration: 0.32 }}
-            />
-            <span className="relative z-10 group-hover:text-black transition-colors">Let&apos;s Talk</span>
+            Let&apos;s Talk
           </motion.a>
 
           {HERO_ASSET_ENABLED && isModelInteractive && (
             <button
               type="button"
               onClick={() => setIsModelInteractive(false)}
-              className="px-8 sm:px-10 py-4 sm:py-5 border border-white/40 uppercase tracking-widest text-sm sm:text-base hover:border-white hover:bg-white/10 transition-colors"
+              className="px-8 sm:px-10 py-4 sm:py-5 border border-white/35 bg-white/8 text-white uppercase tracking-widest text-sm sm:text-base hover:bg-white hover:text-black hover:border-white transition-colors duration-300"
             >
               Close Asset View
             </button>
@@ -406,14 +390,14 @@ export function Hero({ introReady = true }: HeroProps) {
 
       {isShowreelOpen && (
         <motion.div
-          className="fixed inset-0 z-[130] bg-black/75 backdrop-blur-sm flex items-center justify-center px-4"
+          className="fixed inset-0 z-[45] bg-black/75 backdrop-blur-sm flex items-start justify-center px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-6 sm:pb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsShowreelOpen(false)}
         >
           <motion.div
-            className="relative w-full max-w-5xl border border-white/20 bg-[#05050a] shadow-[0_24px_90px_rgba(0,0,0,0.6)]"
+            className="relative w-[92vw] sm:w-[88vw] lg:w-[80vw] max-w-[1600px] border border-white/20 bg-[#05050a] shadow-[0_24px_90px_rgba(0,0,0,0.6)]"
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
@@ -422,13 +406,13 @@ export function Hero({ introReady = true }: HeroProps) {
             <button
               type="button"
               aria-label="Close showreel"
-              className="absolute top-3 right-3 z-10 h-9 w-9 border border-white/25 bg-black/60 text-white flex items-center justify-center hover:border-white transition-colors"
+              className="absolute top-3 right-3 z-20 h-9 w-9 border border-white/25 bg-black/70 text-white flex items-center justify-center hover:border-white transition-colors"
               onClick={() => setIsShowreelOpen(false)}
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="aspect-video w-full bg-black">
+            <div className="mt-12 sm:mt-14 w-full bg-black max-h-[80vh] aspect-video">
               {showreelEmbedUrl ? (
                 <iframe
                   src={showreelEmbedUrl}

@@ -225,7 +225,7 @@ export function Contact() {
                   autoComplete="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#ff6b00] outline-none transition-colors text-lg"
+                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#a566ff] outline-none transition-colors text-lg"
                   required
                 />
               </motion.div>
@@ -247,7 +247,7 @@ export function Contact() {
                   autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#ff6b00] outline-none transition-colors text-lg"
+                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#a566ff] outline-none transition-colors text-lg"
                   required
                 />
               </motion.div>
@@ -269,7 +269,7 @@ export function Contact() {
                   autoComplete="organization"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#ff6b00] outline-none transition-colors text-lg"
+                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#a566ff] outline-none transition-colors text-lg"
                 />
               </motion.div>
 
@@ -290,7 +290,7 @@ export function Contact() {
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={5}
-                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#ff6b00] outline-none transition-colors text-lg resize-none"
+                  className="w-full bg-transparent border-b-2 border-white/20 py-4 px-0 focus:border-[#a566ff] outline-none transition-colors text-lg resize-none"
                   required
                 />
               </motion.div>
@@ -320,17 +320,9 @@ export function Contact() {
                 disabled={
                   submitState === "submitting" || !turnstileToken || !CONTACT_ENDPOINT || !TURNSTILE_SITE_KEY
                 }
-                className="px-16 py-6 bg-[#ff6b00] text-black uppercase tracking-widest text-lg relative overflow-hidden group mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-16 py-6 border border-white/80 bg-white text-black uppercase tracking-widest text-lg mt-8 transition-colors duration-300 hover:bg-[#d5bcff] hover:border-[#d5bcff] hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <motion.div
-                  className="absolute inset-0 bg-white"
-                  initial={{ x: "-100%" }}
-                  whileHover={{ x: 0 }}
-                  transition={{ duration: 0.3 }}
-                />
-                <span className="relative z-10">
-                  {submitState === "submitting" ? "Sending..." : "Send Message"}
-                </span>
+                {submitState === "submitting" ? "Sending..." : "Send Message"}
               </motion.button>
 
               {submitMessage && (
@@ -363,7 +355,7 @@ export function Contact() {
                   transition={{ delay: 0.1 }}
                 >
                   <div className="text-sm uppercase tracking-wider opacity-60 mb-2">Email</div>
-                  <a href="mailto:hello@artystudios.com" className="text-xl hover:text-[#ff6b00] transition-colors">
+                  <a href="mailto:hello@artystudios.com" className="text-xl hover:text-[#a566ff] transition-colors">
                     hello@artystudios.com
                   </a>
                 </motion.div>
@@ -432,7 +424,7 @@ export function Contact() {
                       {hoveredSocial === social.name && (
                         <motion.div
                           layoutId="social-underline"
-                          className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#ff6b00]"
+                          className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#a566ff]"
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: 1 }}
                           transition={{ duration: 0.3 }}

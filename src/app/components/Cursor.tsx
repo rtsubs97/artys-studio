@@ -11,61 +11,64 @@ export function Cursor() {
   const [isPressed, setIsPressed] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const interactiveRef = useRef(false);
+  const isVisibleRef = useRef(false);
 
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
 
   const lensX = useSpring(cursorX, {
-    stiffness: 460,
-    damping: 30,
-    mass: 0.5,
+    stiffness: 920,
+    damping: 68,
+    mass: 0.26,
   });
   const lensY = useSpring(cursorY, {
-    stiffness: 460,
-    damping: 30,
-    mass: 0.5,
+    stiffness: 920,
+    damping: 68,
+    mass: 0.26,
   });
 
   const coreX = useSpring(cursorX, {
-    stiffness: 1000,
-    damping: 32,
+    stiffness: 1500,
+    damping: 82,
+    mass: 0.2,
   });
   const coreY = useSpring(cursorY, {
-    stiffness: 1000,
-    damping: 32,
+    stiffness: 1500,
+    damping: 82,
+    mass: 0.2,
   });
 
   const trailOneX = useSpring(cursorX, {
-    stiffness: 210,
-    damping: 30,
-    mass: 0.6,
+    stiffness: 520,
+    damping: 64,
+    mass: 0.34,
   });
   const trailOneY = useSpring(cursorY, {
-    stiffness: 210,
-    damping: 30,
-    mass: 0.6,
+    stiffness: 520,
+    damping: 64,
+    mass: 0.34,
   });
 
   const trailTwoX = useSpring(cursorX, {
-    stiffness: 160,
-    damping: 28,
-    mass: 0.65,
+    stiffness: 440,
+    damping: 58,
+    mass: 0.4,
   });
   const trailTwoY = useSpring(cursorY, {
-    stiffness: 160,
-    damping: 28,
-    mass: 0.65,
+    stiffness: 440,
+    damping: 58,
+    mass: 0.4,
   });
 
   const trailThreeX = useSpring(cursorX, {
-    stiffness: 120,
-    damping: 25,
-    mass: 0.7,
+    stiffness: 360,
+    damping: 54,
+    mass: 0.46,
   });
   const trailThreeY = useSpring(cursorY, {
-    stiffness: 120,
-    damping: 25,
-    mass: 0.7,
+    stiffness: 360,
+    damping: 54,
+    mass: 0.46,
   });
 
   useEffect(() => {
@@ -93,7 +96,8 @@ export function Cursor() {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
 
-      if (!isVisible) {
+      if (!isVisibleRef.current) {
+        isVisibleRef.current = true;
         setIsVisible(true);
       }
 
@@ -109,6 +113,7 @@ export function Cursor() {
     const handleMouseDown = () => setIsPressed(true);
     const handleMouseUp = () => setIsPressed(false);
     const handleMouseLeaveWindow = () => {
+      isVisibleRef.current = false;
       setIsVisible(false);
       setIsPressed(false);
     };
@@ -129,7 +134,7 @@ export function Cursor() {
       window.removeEventListener("mouseup", handleMouseUp);
       window.removeEventListener("mouseout", handleMouseOut);
     };
-  }, [cursorX, cursorY, isCursorEnabled, isVisible]);
+  }, [cursorX, cursorY, isCursorEnabled]);
 
   useEffect(() => {
     const root = document.documentElement;

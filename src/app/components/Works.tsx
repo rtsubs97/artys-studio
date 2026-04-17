@@ -116,7 +116,7 @@ function WorkTile({ item, index }: WorkTileProps) {
       onBlur={() => setIsFocused(false)}
       tabIndex={0}
       aria-label={item.title}
-      className={`group relative h-full min-h-[210px] overflow-hidden border border-white/10 bg-[#0d0d0d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff6b00] ${layoutClassNames[item.layout]}`}
+      className={`group relative h-full min-h-[210px] overflow-hidden border border-white/10 bg-[#0d0d0d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a566ff] ${layoutClassNames[item.layout]}`}
       style={{ contentVisibility: "auto", contain: "layout paint style" }}
     >
       <video
@@ -148,6 +148,10 @@ function WorkTile({ item, index }: WorkTileProps) {
 
 export function Works() {
   const shouldReduceMotion = useReducedMotion();
+  const ctaPrimaryClass =
+    "inline-block px-12 sm:px-16 py-4 sm:py-6 border border-white/80 bg-white text-black text-base sm:text-lg uppercase tracking-widest transition-colors duration-300 hover:bg-[#d5bcff] hover:border-[#d5bcff] hover:text-black";
+  const ctaSecondaryClass =
+    "text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 border border-white/35 bg-white/8 text-white hover:bg-white hover:text-black hover:border-white transition-colors duration-300 uppercase tracking-widest inline-block";
 
   return (
     <section id="work" className="relative py-24 px-4 sm:px-6 md:px-12">
@@ -178,7 +182,7 @@ export function Works() {
               href="https://www.behance.net/rohantambe97"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4 border-2 border-white hover:bg-white hover:text-black transition-all duration-300 uppercase tracking-widest inline-block"
+              className={ctaSecondaryClass}
               whileHover={{ scale: shouldReduceMotion ? 1 : 1.03 }}
               whileTap={{ scale: shouldReduceMotion ? 1 : 0.97 }}
             >
@@ -187,7 +191,7 @@ export function Works() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[220px] sm:auto-rows-[190px] lg:auto-rows-[220px] gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-flow-row-dense auto-rows-[220px] sm:auto-rows-[190px] lg:auto-rows-[220px] gap-4 sm:gap-5">
           {workItems.map((item, index) => (
             <WorkTile key={item.id} item={item} index={index} />
           ))}
@@ -209,17 +213,11 @@ export function Works() {
             </p>
             <motion.a
               href="#contact"
-              className="inline-block px-12 sm:px-16 py-4 sm:py-6 bg-[#ff6b00] text-black text-base sm:text-lg uppercase tracking-widest relative overflow-hidden group"
+              className={ctaPrimaryClass}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
             >
-              <motion.div
-                className="absolute inset-0 bg-white"
-                initial={{ x: "-100%" }}
-                whileHover={{ x: 0 }}
-                transition={{ duration: 0.3 }}
-              />
-              <span className="relative z-10">Get in Touch</span>
+              Get in Touch
             </motion.a>
           </div>
         </motion.div>
