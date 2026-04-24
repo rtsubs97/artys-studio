@@ -88,7 +88,7 @@ export function Preloader({ ready, phase, onReadyToClose, onClosed }: PreloaderP
             transition={{ duration: shouldReduceMotion ? 0 : 0.75 }}
             className="text-xs sm:text-sm tracking-[0.32em] uppercase text-white/70 mb-5"
           >
-            Arty Studios
+            ARTY'S STUDIO
           </motion.p>
 
           <motion.h2

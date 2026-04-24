@@ -1,7 +1,8 @@
 import { motion, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { smoothScrollToHash } from "../utils/smoothScroll";
 
-type LayoutVariant = "feature" | "wide" | "tall" | "standard";
+type LayoutVariant = "feature" | "wide" | "tall" | "square" | "standard";
 
 interface WorkItem {
   id: number;
@@ -9,12 +10,38 @@ interface WorkItem {
   discipline: "Product" | "Architectural" | "Jewelry" | "Automobile";
   fileName: string;
   layout: LayoutVariant;
+  videoScale?: number;
+  videoPosition?: string;
+  tileSizeClass?: string;
+}
+
+interface ManualTileTuning {
+  layout?: LayoutVariant;
+  videoScale?: number;
+  videoPosition?: string;
+  tileSizeClass?: string;
 }
 
 const workItems: WorkItem[] = [
   { id: 2, title: "CAR VISION 01", discipline: "Automobile", fileName: "Car1.mp4", layout: "tall" },
-  { id: 3, title: "RING CASE", discipline: "Jewelry", fileName: "Ring Case.mp4", layout: "wide" },
-  { id: 4, title: "MASK INTRO", discipline: "Product", fileName: "Mask Intro.mp4", layout: "standard" },
+  {
+    id: 3,
+    title: "RING CASE",
+    discipline: "Jewelry",
+    fileName: "Ring Case.mp4",
+    layout: "standard",
+    videoScale: 1.48,
+    videoPosition: "50% 50%",
+  },
+  {
+    id: 4,
+    title: "MASK INTRO",
+    discipline: "Product",
+    fileName: "Mask Intro.mp4",
+    layout: "standard",
+    videoScale: 1.52,
+    videoPosition: "50% 50%",
+  },
   { id: 5, title: "ARCHVIZ OUT", discipline: "Architectural", fileName: "Archviz Out.mp4", layout: "standard" },
   { id: 7, title: "RING CUT 01", discipline: "Jewelry", fileName: "Ring1.mp4", layout: "tall" },
   { id: 10, title: "ARCHVIZ IN 03", discipline: "Architectural", fileName: "Archviz in 3.mp4", layout: "wide" },
@@ -24,18 +51,64 @@ const workItems: WorkItem[] = [
   { id: 14, title: "ARCHVIZ 04", discipline: "Architectural", fileName: "Archviz4.mp4", layout: "wide" },
   { id: 15, title: "PHASE 02", discipline: "Product", fileName: "Ph2.mp4", layout: "standard" },
   { id: 17, title: "PHASE 03", discipline: "Product", fileName: "Ph3.mp4", layout: "standard" },
-  { id: 18, title: "ARCHVIZ OUT 05", discipline: "Architectural", fileName: "Archvizout5.mp4", layout: "tall" },
+  {
+    id: 18,
+    title: "ARCHVIZ OUT 05",
+    discipline: "Architectural",
+    fileName: "Archvizout5.mp4",
+    layout: "tall",
+  },
   { id: 19, title: "COSMETICS 02", discipline: "Product", fileName: "Cosmetics2.mp4", layout: "wide" },
   { id: 20, title: "PHASE 04", discipline: "Product", fileName: "Ph4.mp4", layout: "standard" },
-  { id: 23, title: "ARCHVIZ OUT 07", discipline: "Architectural", fileName: "Archvizout7.mp4", layout: "tall" },
+  {
+    id: 23,
+    title: "ARCHVIZ OUT 07",
+    discipline: "Architectural",
+    fileName: "Archvizout7.mp4",
+    layout: "tall",
+  },
   { id: 24, title: "ROUTER 02", discipline: "Product", fileName: "Router2.mp4", layout: "standard" },
-  { id: 25, title: "MASK SEQUENCE 02", discipline: "Product", fileName: "Mask2.mp4", layout: "standard" },
+  {
+    id: 25,
+    title: "MASK SEQUENCE 02",
+    discipline: "Product",
+    fileName: "Mask2.mp4",
+    layout: "standard",
+    videoScale: 1.45,
+    videoPosition: "50% 50%",
+  },
 ];
+
+// Manual edit window:
+// - Change videoScale to remove bezel bars per clip.
+// - Change tileSizeClass to resize one clip box without touching global grid.
+// - Example tileSizeClass values: "sm:col-span-2", "sm:row-span-2", "lg:col-span-2 lg:row-span-1"
+const MANUAL_TILE_TUNING: Record<number, ManualTileTuning> = {
+  3: { videoScale: 1.85, tileSizeClass: "" },
+  4: { videoScale: 2.05, tileSizeClass: "" },
+  25: { videoScale: 1.9, tileSizeClass: "" },
+};
+
+// Global bezel crop factor (set to 1 for no global zoom).
+const GLOBAL_BEZEL_ZOOM = 1.12;
+
+function applyManualTuning(item: WorkItem): WorkItem {
+  const manual = MANUAL_TILE_TUNING[item.id];
+  if (!manual) {
+    return item;
+  }
+
+  return {
+    ...item,
+    ...manual,
+  };
+}
 
 const layoutClassNames: Record<LayoutVariant, string> = {
   feature: "sm:col-span-2 sm:row-span-2",
   wide: "sm:col-span-2",
   tall: "sm:row-span-2",
+  square: "sm:row-span-2",
   standard: "",
 };
 
@@ -49,6 +122,7 @@ interface WorkTileProps {
 }
 
 function WorkTile({ item, index }: WorkTileProps) {
+  const tunedItem = applyManualTuning(item);
   const shouldReduceMotion = useReducedMotion();
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -58,6 +132,9 @@ function WorkTile({ item, index }: WorkTileProps) {
 
   const tileRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const baseScale = (tunedItem.videoScale ?? 1) * GLOBAL_BEZEL_ZOOM;
+  const liveScale = shouldReduceMotion || !(isHovered || isFocused) ? baseScale : baseScale * 1.03;
+  const resolvedPosition = tunedItem.videoPosition ?? "50% 50%";
 
   useEffect(() => {
     const target = tileRef.current;
@@ -108,40 +185,36 @@ function WorkTile({ item, index }: WorkTileProps) {
   }, [isFocused, isHovered, isInView, shouldReduceMotion]);
 
   return (
-    <article
-      ref={tileRef}
+      <article
+        ref={tileRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
       tabIndex={0}
-      aria-label={item.title}
-      className={`group relative h-full min-h-[210px] overflow-hidden border border-white/10 bg-[#0d0d0d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a566ff] ${layoutClassNames[item.layout]}`}
+      aria-label={tunedItem.title}
+      className={`group relative h-full min-h-[210px] sm:min-h-0 overflow-hidden border border-white/10 bg-[#0d0d0d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a566ff] ${layoutClassNames[tunedItem.layout]} ${tunedItem.tileSizeClass ?? ""}`}
       style={{ contentVisibility: "auto", contain: "layout paint style" }}
     >
       <video
         ref={videoRef}
-        src={hasLoadedSource ? getVideoUrl(item.fileName) : undefined}
+        src={hasLoadedSource ? getVideoUrl(tunedItem.fileName) : undefined}
         muted
         loop
         playsInline
         preload={hasLoadedSource ? "metadata" : "none"}
-        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] opacity-90 group-hover:opacity-100"
+        className="absolute inset-0 h-full w-full transition duration-500 opacity-90 group-hover:opacity-100"
+        style={{
+          objectFit: "cover",
+          objectPosition: resolvedPosition,
+          transform: `scale(${liveScale})`,
+        }}
         onLoadedData={() => setIsReady(true)}
-        aria-label={item.title}
+        aria-label={tunedItem.title}
       />
 
-      {!isReady && (
-        <div className="absolute inset-0 bg-[linear-gradient(130deg,#101010,#070707)]" />
-      )}
+      {!isReady && <div className="absolute inset-0 bg-[linear-gradient(130deg,#101010,#070707)]" />}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
-
-      <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
-        <h3 className="text-lg sm:text-xl leading-tight tracking-tight" style={{ fontWeight: 600 }}>
-          {item.title}
-        </h3>
-      </div>
     </article>
   );
 }
@@ -169,9 +242,7 @@ export function Works() {
                 className="text-[clamp(3rem,12vw,10rem)] leading-[0.9] tracking-tighter mb-4 sm:mb-6"
                 style={{ fontWeight: 700 }}
               >
-                SELECTED
-                <br />
-                WORKS
+                GLIMPSE
               </h2>
               <p className="text-base sm:text-lg lg:text-xl opacity-70 max-w-3xl leading-relaxed">
                 Product, architectural, jewelry, and automobile visualization reels placed together in a single living board.
@@ -179,7 +250,7 @@ export function Works() {
             </div>
 
             <motion.a
-              href="https://www.behance.net/rohantambe97"
+              href="https://www.behance.net/artystudio3d"
               target="_blank"
               rel="noopener noreferrer"
               className={ctaSecondaryClass}
@@ -191,7 +262,7 @@ export function Works() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-flow-row-dense auto-rows-[220px] sm:auto-rows-[190px] lg:auto-rows-[220px] gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-flow-row-dense auto-rows-[220px] sm:auto-rows-[200px] lg:auto-rows-[210px] gap-4 sm:gap-5">
           {workItems.map((item, index) => (
             <WorkTile key={item.id} item={item} index={index} />
           ))}
@@ -216,6 +287,10 @@ export function Works() {
               className={ctaPrimaryClass}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
+              onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+                event.preventDefault();
+                smoothScrollToHash("#contact");
+              }}
             >
               Get in Touch
             </motion.a>

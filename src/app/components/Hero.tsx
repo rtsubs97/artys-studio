@@ -1,7 +1,8 @@
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "motion/react";
 import gsap from "gsap";
 import { X } from "lucide-react";
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState, type MouseEvent } from "react";
+import { smoothScrollToHash } from "../utils/smoothScroll";
 
 const LazyCosmicScene = lazy(async () => {
   const module = await import("./hero-cosmic/CosmicScene");
@@ -241,7 +242,7 @@ export function Hero({ introReady = true }: HeroProps) {
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.7, delay: 0.2 }}
           className="relative z-40 mb-8 sm:mb-10 text-xs sm:text-sm tracking-[0.22em] uppercase opacity-70"
         >
-          Arty Studios - Mumbai To Global
+          Arty's Studio
         </motion.div>
 
         <div
@@ -307,7 +308,7 @@ export function Hero({ introReady = true }: HeroProps) {
         >
           {HERO_ASSET_ENABLED
             ? "Hover the headline to cast the reveal. Hold or click to open the landing asset."
-            : "Hover the headline to cast the reveal."}
+            : ""}
         </motion.p>
 
         <motion.div
@@ -331,6 +332,10 @@ export function Hero({ introReady = true }: HeroProps) {
             className={ctaSecondaryClass}
             whileHover={actionHover}
             whileTap={actionTap}
+            onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+              event.preventDefault();
+              smoothScrollToHash("#contact");
+            }}
           >
             Let&apos;s Talk
           </motion.a>
@@ -355,7 +360,7 @@ export function Hero({ introReady = true }: HeroProps) {
           {[
             { number: "50+", label: "Projects Delivered" },
             { number: "15+", label: "Global Clients" },
-            { number: "10+", label: "Years Experience" },
+            { number: "5+", label: "Years Experience" },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
@@ -372,21 +377,6 @@ export function Hero({ introReady = true }: HeroProps) {
           ))}
         </motion.div>
       </div>
-
-      {!shouldReduceMotion && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="absolute z-40 bottom-12 left-1/2 -translate-x-1/2 hidden md:block"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            className="w-[1px] h-20 bg-white opacity-40"
-          />
-        </motion.div>
-      )}
 
       {isShowreelOpen && (
         <motion.div

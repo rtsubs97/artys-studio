@@ -8,9 +8,9 @@ export function Footer() {
   ];
 
   const socialLinks = [
-    { label: "Behance", href: "https://www.behance.net/rohantambe97", icon: Dribbble },
-    { label: "LinkedIn", href: null, icon: Linkedin },
-    { label: "Instagram", href: null, icon: Instagram },
+    { label: "Behance", href: "https://www.behance.net/artystudio3d", icon: Dribbble },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/roantambe/", icon: Linkedin },
+    { label: "Instagram", href: "https://www.instagram.com/artys_3d_studio/", icon: Instagram },
     { label: "Twitter", href: null, icon: Twitter },
   ];
 

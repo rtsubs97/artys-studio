@@ -81,6 +81,7 @@ interface CosmicTextRevealProps {
   active: boolean;
   lines: string[];
   wandRef: MutableRefObject<{ x: number; y: number }>;
+  className?: string;
 }
 
 interface RevealPlaneProps {
@@ -167,7 +168,8 @@ function RevealPlane({ active, lines, size, wandRef }: RevealPlaneProps) {
     const totalHeight = lineHeight * lines.length;
     let y = (size.height - totalHeight) * 0.5 + lineHeight * 0.5;
 
-    for (const line of lines) {
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
       textContext.fillText(line, size.width * 0.5, y);
       y += lineHeight;
     }
@@ -226,7 +228,7 @@ function RevealPlane({ active, lines, size, wandRef }: RevealPlaneProps) {
   );
 }
 
-export function CosmicTextReveal({ active, lines, wandRef }: CosmicTextRevealProps) {
+export function CosmicTextReveal({ active, lines, wandRef, className = "" }: CosmicTextRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -252,7 +254,7 @@ export function CosmicTextReveal({ active, lines, wandRef }: CosmicTextRevealPro
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none">
+    <div ref={containerRef} className={`absolute inset-0 pointer-events-none ${className}`}>
       {size.width > 0 && size.height > 0 && (
         <Canvas
           orthographic

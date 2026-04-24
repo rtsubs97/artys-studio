@@ -11,12 +11,12 @@ export function About() {
   const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
 
   const services = [
-    "Brand Strategy & Identity",
-    "Visual Design & Art Direction",
-    "Packaging & Product Design",
-    "Digital Experience & UI/UX",
-    "Typography & Custom Type",
-    "Motion Graphics & Animation"
+    "Modeling",
+    "Texturing",
+    "Lighting",
+    "Animation",
+    "Rendering",
+    "Editing"
   ];
 
   const clients = [
@@ -44,16 +44,9 @@ export function About() {
             STUDIO
           </h2>
           <motion.div style={{ y }} className="max-w-3xl">
-            <p className="text-xl md:text-2xl leading-relaxed opacity-80 mb-6">
-              Arty's Collective is a creative 3D Visualization Studio based out of India.
-            </p>
-            <p className="text-xl md:text-2xl leading-relaxed opacity-80 mb-6">
-              We are a team of 9 creative minds, living, breathing, and dreaming creative solutions for brands and startups,
-              by providing 3D visualization and animation solutions for social media campaigns, ad campaigns,
-              cinematics for promos/sales pitch.
-            </p>
             <p className="text-xl md:text-2xl leading-relaxed opacity-80">
-              We work in Product, Architectural, Jewelry, & Automobile visualization and animation.
+              We provide creative solutions for brands and startups, by providing 3D visualization, 3D animation, and 3D Motin Graphics
+              solutions for social media campaigns, ad campaigns, cinematics for promos/sales pitch.
             </p>
           </motion.div>
         </motion.div>
@@ -122,40 +115,6 @@ export function About() {
           </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-12"
-        >
-          {[
-            {
-              title: "Global Reach",
-              description: "Working with clients across continents, bringing international perspective to every project."
-            },
-            {
-              title: "Award-Winning",
-              description: "Recognition from leading design institutions and industry publications worldwide."
-            },
-            {
-              title: "Proven Process",
-              description: "A refined methodology that delivers exceptional results, on time and on budget."
-            }
-          ].map((item, index) => (
-            <motion.div
-              key={item.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2, duration: 0.6 }}
-              className="border-l-2 border-[#a566ff] pl-6"
-            >
-              <h4 className="text-2xl mb-4" style={{ fontWeight: 600 }}>{item.title}</h4>
-              <p className="opacity-70 leading-relaxed">{item.description}</p>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );

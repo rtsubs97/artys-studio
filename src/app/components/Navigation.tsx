@@ -1,71 +1,18 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import { Menu, X } from "lucide-react";
+import { smoothScrollToHash } from "../utils/smoothScroll";
 
 export function Navigation() {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const scrollFrameRef = useRef<number | null>(null);
 
   const navItems = [
     { label: "Work", href: "#work" },
     { label: "About", href: "#about" },
     { label: "Contact", href: "#contact" },
-    { label: "Behance", href: "https://www.behance.net/rohantambe97", external: true },
+    { label: "Behance", href: "https://www.behance.net/artystudio3d", external: true },
   ];
-
-  useEffect(() => {
-    return () => {
-      if (scrollFrameRef.current !== null) {
-        window.cancelAnimationFrame(scrollFrameRef.current);
-      }
-    };
-  }, []);
-
-  const smoothScrollToHash = (hash: string) => {
-    const target =
-      hash === "#top"
-        ? document.getElementById("top")
-        : document.querySelector<HTMLElement>(hash);
-
-    if (!target) {
-      return;
-    }
-
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const startY = window.scrollY;
-    const offset = window.innerWidth < 768 ? 84 : 102;
-    const targetY = Math.max(0, startY + target.getBoundingClientRect().top - offset);
-
-    if (prefersReducedMotion) {
-      window.scrollTo(0, targetY);
-      return;
-    }
-
-    if (scrollFrameRef.current !== null) {
-      window.cancelAnimationFrame(scrollFrameRef.current);
-    }
-
-    const duration = 980;
-    const start = performance.now();
-    const easeInOutCubic = (t: number) =>
-      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-    const tick = (now: number) => {
-      const elapsed = Math.min((now - start) / duration, 1);
-      const eased = easeInOutCubic(elapsed);
-      const nextY = startY + (targetY - startY) * eased;
-      window.scrollTo(0, nextY);
-
-      if (elapsed < 1) {
-        scrollFrameRef.current = window.requestAnimationFrame(tick);
-      } else {
-        scrollFrameRef.current = null;
-      }
-    };
-
-    scrollFrameRef.current = window.requestAnimationFrame(tick);
-  };
 
   const handleNavLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith("#")) {
@@ -84,13 +31,18 @@ export function Navigation() {
     >
       <motion.a
         href="#top"
-        className="text-2xl tracking-tight"
+        className="inline-flex items-center h-8 sm:h-10 w-[118px] sm:w-[146px] overflow-hidden"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
         onClick={(event) => handleNavLinkClick(event, "#top")}
       >
-        <span className="font-bold">ARTY</span>
-        <span className="opacity-70"> STUDIOS</span>
+        <img
+          src="/Artboard%203@4x-8.png"
+          alt="Arty Studios"
+          className="h-full w-full object-contain object-left scale-[2.6] origin-left"
+          loading="eager"
+          decoding="async"
+        />
       </motion.a>
 
       <button

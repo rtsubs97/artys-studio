@@ -158,10 +158,10 @@ export function Contact() {
   };
 
   const socials = [
-    { name: "Behance", url: "https://www.behance.net/rohantambe97" },
-    { name: "LinkedIn", url: null },
-    { name: "Instagram", url: null },
-    { name: "Twitter", url: null }
+    { name: "Behance", url: "https://www.behance.net/artystudio3d" },
+    { name: "LinkedIn", url: "https://www.linkedin.com/in/roantambe/" },
+    { name: "Instagram", url: "https://www.instagram.com/artys_3d_studio" },
+    // { name: "Twitter", url: null }
   ];
 
   return (
@@ -190,10 +190,6 @@ export function Contact() {
           >
             <div className="mb-12">
               <h3 className="text-3xl mb-6" style={{ fontWeight: 600 }}>Start a Project</h3>
-              <p className="text-lg opacity-70 leading-relaxed">
-                Ready to bring your brand vision to life? Get in touch and let's discuss
-                how we can help your business stand out in the global market.
-              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -215,13 +211,13 @@ export function Contact() {
                 transition={{ delay: 0.1 }}
               >
                 <label htmlFor="contact-name" className="sr-only">
-                  Your Name
+                  Name
                 </label>
                 <input
                   id="contact-name"
                   name="name"
                   type="text"
-                  placeholder="Your Name"
+                  placeholder="Name"
                   autoComplete="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -303,7 +299,12 @@ export function Contact() {
                 className="pt-2"
               >
                 {TURNSTILE_SITE_KEY ? (
-                  <div ref={turnstileContainerRef} />
+                  <div>
+                    <div ref={turnstileContainerRef} />
+                    <p className="mt-2 text-xs text-white/60">
+                      Cloudflare Turnstile may verify instantly for trusted users. Challenge prompts appear only when risk is detected.
+                    </p>
+                  </div>
                 ) : (
                   <p className="text-sm text-red-300/90">Captcha setup missing. Add `VITE_TURNSTILE_SITE_KEY`.</p>
                 )}
@@ -355,8 +356,8 @@ export function Contact() {
                   transition={{ delay: 0.1 }}
                 >
                   <div className="text-sm uppercase tracking-wider opacity-60 mb-2">Email</div>
-                  <a href="mailto:hello@artystudios.com" className="text-xl hover:text-[#a566ff] transition-colors">
-                    hello@artystudios.com
+                  <a href="mailto:rohan@artys-studio.com" className="text-xl hover:text-[#a566ff] transition-colors">
+                    rohan@artys-studio.com
                   </a>
                 </motion.div>
 
@@ -366,9 +367,9 @@ export function Contact() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 }}
                 >
-                  <div className="text-sm uppercase tracking-wider opacity-60 mb-2">Location</div>
+                  {/* <div className="text-sm uppercase tracking-wider opacity-60 mb-2">Location</div>
                   <p className="text-xl">Mumbai, India</p>
-                  <p className="text-xl opacity-70">Working Globally</p>
+                  <p className="text-xl opacity-70">Working Globally</p> */}
                 </motion.div>
 
                 <motion.div
@@ -378,7 +379,7 @@ export function Contact() {
                   transition={{ delay: 0.3 }}
                 >
                   <div className="text-sm uppercase tracking-wider opacity-60 mb-2">Response Time</div>
-                  <p className="text-xl">Within 24 hours</p>
+                  <p className="text-xl">Within 6 hours</p>
                 </motion.div>
               </div>
             </div>
@@ -436,22 +437,6 @@ export function Contact() {
               </div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.6 }}
-              className="mt-16 p-8 border border-white/20 bg-white/5"
-            >
-              <h4 className="text-xl mb-4" style={{ fontWeight: 600 }}>New Business Inquiries</h4>
-              <p className="opacity-70 leading-relaxed mb-4">
-                For new project inquiries and partnerships, please include your project timeline
-                and budget range in your message.
-              </p>
-              <p className="text-sm opacity-60">
-                Minimum project value: $10,000 USD
-              </p>
-            </motion.div>
           </motion.div>
         </div>
 
