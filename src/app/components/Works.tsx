@@ -1,5 +1,6 @@
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { Play } from "lucide-react";
 import { smoothScrollToHash } from "../utils/smoothScroll";
 
 type LayoutVariant = "feature" | "wide" | "tall" | "square" | "standard";
@@ -23,27 +24,23 @@ interface ManualTileTuning {
 }
 
 const workItems: WorkItem[] = [
-  { id: 2, title: "CAR VISION 01", discipline: "Automobile", fileName: "Car1.mp4", layout: "tall" },
+  { id: 2, title: "RING CASE", discipline: "Jewelry", fileName: "Ring Case.mp4", layout: "tall" },
   {
     id: 3,
-    title: "RING CASE",
-    discipline: "Jewelry",
-    fileName: "Ring Case.mp4",
+    title: "CAR VISION 01",
+    discipline: "Automobile",
+    fileName: "Car1.mp4",
     layout: "standard",
-    videoScale: 1.48,
-    videoPosition: "50% 50%",
   },
   {
     id: 4,
-    title: "MASK INTRO",
-    discipline: "Product",
-    fileName: "Mask Intro.mp4",
+    title: "RING CUT 01",
+    discipline: "Jewelry",
+    fileName: "Ring1.mp4",
     layout: "standard",
-    videoScale: 1.52,
-    videoPosition: "50% 50%",
   },
   { id: 5, title: "ARCHVIZ OUT", discipline: "Architectural", fileName: "Archviz Out.mp4", layout: "standard" },
-  { id: 7, title: "RING CUT 01", discipline: "Jewelry", fileName: "Ring1.mp4", layout: "tall" },
+  { id: 7, title: "MASK INTRO", discipline: "Product", fileName: "Mask Intro.mp4", layout: "tall" },
   { id: 10, title: "ARCHVIZ IN 03", discipline: "Architectural", fileName: "Archviz in 3.mp4", layout: "wide" },
   { id: 11, title: "CAR VISION 03", discipline: "Automobile", fileName: "Car3.mp4", layout: "standard" },
   { id: 12, title: "ROUTER 01", discipline: "Product", fileName: "Router.mp4", layout: "tall" },
@@ -74,7 +71,7 @@ const workItems: WorkItem[] = [
     discipline: "Product",
     fileName: "Mask2.mp4",
     layout: "standard",
-    videoScale: 1.45,
+    videoScale: 1.12,
     videoPosition: "50% 50%",
   },
 ];
@@ -84,13 +81,10 @@ const workItems: WorkItem[] = [
 // - Change tileSizeClass to resize one clip box without touching global grid.
 // - Example tileSizeClass values: "sm:col-span-2", "sm:row-span-2", "lg:col-span-2 lg:row-span-1"
 const MANUAL_TILE_TUNING: Record<number, ManualTileTuning> = {
-  3: { videoScale: 1.85, tileSizeClass: "" },
-  4: { videoScale: 2.05, tileSizeClass: "" },
-  25: { videoScale: 1.9, tileSizeClass: "" },
+  2: { videoScale: 1.36, tileSizeClass: "" },
+  7: { videoScale: 1.36, videoPosition: "50% 60%", tileSizeClass: "" },
+  25: { videoScale: 1.12, tileSizeClass: "" },
 };
-
-// Global bezel crop factor (set to 1 for no global zoom).
-const GLOBAL_BEZEL_ZOOM = 1.12;
 
 function applyManualTuning(item: WorkItem): WorkItem {
   const manual = MANUAL_TILE_TUNING[item.id];
@@ -107,8 +101,8 @@ function applyManualTuning(item: WorkItem): WorkItem {
 const layoutClassNames: Record<LayoutVariant, string> = {
   feature: "sm:col-span-2 sm:row-span-2",
   wide: "sm:col-span-2",
-  tall: "sm:row-span-2",
-  square: "sm:row-span-2",
+  tall: "row-span-2",
+  square: "row-span-2",
   standard: "",
 };
 
@@ -122,17 +116,23 @@ interface WorkTileProps {
 }
 
 function WorkTile({ item, index }: WorkTileProps) {
+  const PREVIEW_DURATION_MS = 9000;
   const tunedItem = applyManualTuning(item);
   const shouldReduceMotion = useReducedMotion();
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isManualPlaying, setIsManualPlaying] = useState(false);
+  const [isPlaybackActive, setIsPlaybackActive] = useState(false);
   const [isInView, setIsInView] = useState(index < 6);
   const [hasLoadedSource, setHasLoadedSource] = useState(index < 6);
   const [isReady, setIsReady] = useState(false);
 
   const tileRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const baseScale = (tunedItem.videoScale ?? 1) * GLOBAL_BEZEL_ZOOM;
+  const previewTimeoutRef = useRef<number | null>(null);
+  const previewConsumedRef = useRef(false);
+  const touchInteractionRef = useRef(false);
+  const baseScale = tunedItem.videoScale ?? 1;
   const liveScale = shouldReduceMotion || !(isHovered || isFocused) ? baseScale : baseScale * 1.03;
   const resolvedPosition = tunedItem.videoPosition ?? "50% 50%";
 
@@ -161,36 +161,96 @@ function WorkTile({ item, index }: WorkTileProps) {
   }, []);
 
   useEffect(() => {
+    return () => {
+      if (previewTimeoutRef.current !== null) {
+        window.clearTimeout(previewTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const video = videoRef.current;
     if (!video) {
       return;
     }
 
-    const shouldPlay = !shouldReduceMotion && isInView && (isHovered || isFocused);
+    const shouldAutoPlay = !shouldReduceMotion && isInView && (isHovered || isFocused);
+    const shouldPlay = shouldAutoPlay || isManualPlaying;
 
-    if (shouldPlay) {
+    if (shouldPlay && !previewConsumedRef.current) {
       const playPromise = video.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay can be blocked in some environments.
-        });
+        playPromise
+          .then(() => {
+            setIsPlaybackActive(true);
+          })
+          .catch(() => {
+            // Autoplay can be blocked in some environments.
+            setIsPlaybackActive(false);
+            setIsManualPlaying(false);
+          });
+      } else {
+        setIsPlaybackActive(true);
       }
+
+      if (previewTimeoutRef.current !== null) {
+        window.clearTimeout(previewTimeoutRef.current);
+      }
+
+      previewTimeoutRef.current = window.setTimeout(() => {
+        previewConsumedRef.current = true;
+        setIsManualPlaying(false);
+        setIsPlaybackActive(false);
+        video.pause();
+      }, PREVIEW_DURATION_MS);
+
       return;
     }
 
+    if (previewTimeoutRef.current !== null) {
+      window.clearTimeout(previewTimeoutRef.current);
+      previewTimeoutRef.current = null;
+    }
+
+    setIsPlaybackActive(false);
     video.pause();
     if (!isHovered && !isFocused) {
+      previewConsumedRef.current = false;
       video.currentTime = 0;
     }
-  }, [isFocused, isHovered, isInView, shouldReduceMotion]);
+  }, [PREVIEW_DURATION_MS, isFocused, isHovered, isInView, isManualPlaying, shouldReduceMotion]);
 
   return (
-      <article
-        ref={tileRef}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+    <article
+      ref={tileRef}
+      onMouseEnter={() => {
+        previewConsumedRef.current = false;
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => {
+        previewConsumedRef.current = false;
+        setIsManualPlaying(false);
+        setIsHovered(false);
+      }}
+      onFocus={() => {
+        previewConsumedRef.current = false;
+        setIsFocused(true);
+      }}
+      onBlur={() => {
+        previewConsumedRef.current = false;
+        setIsManualPlaying(false);
+        setIsFocused(false);
+      }}
+      onPointerDown={(event) => {
+        touchInteractionRef.current = event.pointerType !== "mouse";
+      }}
+      onClick={() => {
+        if (!touchInteractionRef.current) {
+          return;
+        }
+        previewConsumedRef.current = false;
+        setIsManualPlaying((prev) => !prev);
+      }}
       tabIndex={0}
       aria-label={tunedItem.title}
       className={`group relative h-full min-h-[210px] sm:min-h-0 overflow-hidden border border-white/10 bg-[#0d0d0d] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a566ff] ${layoutClassNames[tunedItem.layout]} ${tunedItem.tileSizeClass ?? ""}`}
@@ -203,17 +263,42 @@ function WorkTile({ item, index }: WorkTileProps) {
         loop
         playsInline
         preload={hasLoadedSource ? "metadata" : "none"}
-        className="absolute inset-0 h-full w-full transition duration-500 opacity-90 group-hover:opacity-100"
+        className="absolute inset-0 z-0 h-full w-full transition duration-500 opacity-90 group-hover:opacity-100"
         style={{
           objectFit: "cover",
           objectPosition: resolvedPosition,
           transform: `scale(${liveScale})`,
         }}
         onLoadedData={() => setIsReady(true)}
+        onPlay={() => setIsPlaybackActive(true)}
+        onPause={() => setIsPlaybackActive(false)}
         aria-label={tunedItem.title}
       />
 
-      {!isReady && <div className="absolute inset-0 bg-[linear-gradient(130deg,#101010,#070707)]" />}
+      {!isReady && (
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[linear-gradient(130deg,#0f0f12,#07070a,#0f0f12)]" />
+          <div className="absolute inset-0 animate-[pulse_1.8s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_0%,rgba(255,255,255,0.10)_42%,transparent_68%)]" />
+        </div>
+      )}
+
+      {!isPlaybackActive && (
+        <div className="absolute inset-0 md:hidden flex items-center justify-center">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              previewConsumedRef.current = false;
+              setIsManualPlaying(true);
+            }}
+            aria-label={`Play ${tunedItem.title}`}
+            className="h-12 w-12 rounded-full border border-white/35 bg-black/35 backdrop-blur-[2px] flex items-center justify-center"
+          >
+            <Play className="h-5 w-5 text-white/85 ml-[2px]" />
+          </button>
+        </div>
+      )}
 
     </article>
   );

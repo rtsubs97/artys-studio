@@ -448,7 +448,7 @@ export function Contact() {
           className="mt-32 pt-16 border-t border-white/20 text-center"
         >
           <p className="text-sm uppercase tracking-widest opacity-60">
-            © 2026 Arty Studios. All Rights Reserved.
+            © 2026 Art'y Studio. All Rights Reserved.
           </p>
         </motion.div>
       </div>

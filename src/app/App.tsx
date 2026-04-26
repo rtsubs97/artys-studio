@@ -80,8 +80,8 @@ export default function App() {
       <Navigation />
       <main className="relative z-20">
         <Hero introReady={preloaderPhase !== "loading"} />
-        <Works />
         <About />
+        <Works />
         <Contact />
       </main>
 
