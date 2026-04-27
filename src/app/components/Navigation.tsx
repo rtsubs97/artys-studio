@@ -31,7 +31,7 @@ export function Navigation() {
     >
       <motion.a
         href="#top"
-        className="inline-flex items-center h-8 sm:h-10 w-[118px] sm:w-[146px] overflow-hidden"
+        className="inline-flex items-center h-10 sm:h-12 w-[138px] sm:w-[176px] overflow-hidden"
         whileHover={{ scale: 1.05 }}
         transition={{ type: "spring", stiffness: 400, damping: 10 }}
         onClick={(event) => handleNavLinkClick(event, "#top")}
@@ -39,7 +39,7 @@ export function Navigation() {
         <img
           src="/Artboard%203@4x-8.png"
           alt="Arty Studios"
-          className="h-full w-full object-contain object-left scale-[2.6] origin-left"
+          className="h-full w-full object-contain object-left scale-[3.5] origin-left"
           loading="eager"
           decoding="async"
         />

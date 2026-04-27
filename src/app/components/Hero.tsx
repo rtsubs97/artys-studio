@@ -16,6 +16,8 @@ const LazyCosmicTextReveal = lazy(async () => {
 
 const HERO_LINES = ["3D VISUALIZATION", "PARTNER FOR", "CREATIVE STUDIOS"];
 const HERO_ASSET_ENABLED = import.meta.env.VITE_ENABLE_HERO_ASSET === "true";
+const HERO_EARTH_ENABLED = import.meta.env.VITE_ENABLE_HERO_EARTH === "true";
+const HERO_SCENE_ENABLED = HERO_ASSET_ENABLED || HERO_EARTH_ENABLED;
 const SHOWREEL_EMBED_ID = (import.meta.env.VITE_SHOWREEL_EMBED_ID ?? "").trim();
 
 interface PointerSetters {
@@ -31,6 +33,10 @@ interface HeroProps {
 
 export function Hero({ introReady = true }: HeroProps) {
   const shouldReduceMotion = useReducedMotion();
+  const isEarthMode = HERO_EARTH_ENABLED;
+  const [isCompactScreen, setIsCompactScreen] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(max-width: 1024px)").matches : false,
+  );
   const [isHeadlineHovered, setIsHeadlineHovered] = useState(false);
   const [isModelInteractive, setIsModelInteractive] = useState(false);
   const [isSceneElevated, setIsSceneElevated] = useState(false);
@@ -97,11 +103,45 @@ export function Hero({ introReady = true }: HeroProps) {
       return;
     }
 
-    if (HERO_ASSET_ENABLED) {
+    if (HERO_SCENE_ENABLED) {
       void import("./hero-cosmic/CosmicScene");
     }
     void import("./hero-cosmic/CosmicTextReveal");
   }, [shouldReduceMotion]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const media = window.matchMedia("(max-width: 1024px)");
+    const onChange = (event: MediaQueryListEvent) => {
+      setIsCompactScreen(event.matches);
+    };
+
+    setIsCompactScreen(media.matches);
+    media.addEventListener("change", onChange);
+    return () => {
+      media.removeEventListener("change", onChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isModelInteractive) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsModelInteractive(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isModelInteractive]);
 
   useEffect(() => {
     if (!isShowreelOpen) {
@@ -144,6 +184,21 @@ export function Hero({ introReady = true }: HeroProps) {
       setIsHeroSceneActive(true);
     }
   });
+
+  useEffect(() => {
+    if (!isEarthMode || !isModelInteractive) {
+      return;
+    }
+
+    const onWheel = () => {
+      setIsModelInteractive(false);
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+    };
+  }, [isEarthMode, isModelInteractive]);
 
   const updateScenePointer = (clientX: number, clientY: number) => {
     const section = sectionRef.current;
@@ -206,10 +261,11 @@ export function Hero({ introReady = true }: HeroProps) {
     <section
       ref={sectionRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{ position: "relative" }}
       onMouseMove={(event) => updateScenePointer(event.clientX, event.clientY)}
     >
-      {!shouldReduceMotion && HERO_ASSET_ENABLED && (
-        <motion.div className="absolute inset-0" style={{ opacity: assetOpacity, y: assetY, zIndex: isSceneElevated ? 30 : 0 }}>
+      {!shouldReduceMotion && HERO_SCENE_ENABLED && (
+        <motion.div className="absolute inset-0" style={{ opacity: assetOpacity, y: assetY, zIndex: isSceneElevated ? 60 : 0 }}>
           <motion.div
             className="absolute inset-0"
             initial={false}
@@ -218,7 +274,8 @@ export function Hero({ introReady = true }: HeroProps) {
                 ? { opacity: 1, scale: 1 }
                 : {
                     opacity: isModelInteractive ? 1 : 0.93,
-                    scale: isModelInteractive ? 1.02 : 0.985,
+                    scale: isModelInteractive ? (isEarthMode ? 1.08 : 1.02) : 0.985,
+                    x: isModelInteractive && isEarthMode ? -42 : 0,
                   }
             }
             transition={shouldReduceMotion ? { duration: 0 } : { duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
@@ -227,22 +284,37 @@ export function Hero({ introReady = true }: HeroProps) {
               <LazyCosmicScene
                 interactive={isModelInteractive}
                 pointerRef={scenePointerRef}
-                mode="asset"
+                mode={HERO_EARTH_ENABLED ? "earth" : "asset"}
                 active={isHeroSceneActive}
+                onInteractionChange={(next) => setIsModelInteractive(next)}
               />
             </Suspense>
           </motion.div>
         </motion.div>
       )}
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-28 sm:py-32">
+      <motion.div
+        className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-28 sm:py-32"
+        initial={false}
+        animate={
+          shouldReduceMotion
+            ? { opacity: 1, scale: 1, y: 0 }
+            : {
+                opacity: isModelInteractive && isEarthMode ? 0.38 : 1,
+                scale: isModelInteractive && isEarthMode ? 0.97 : 1,
+                y: isModelInteractive && isEarthMode ? 12 : 0,
+              }
+        }
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        style={{ zIndex: isModelInteractive && isEarthMode ? 5 : 40, pointerEvents: isModelInteractive && isEarthMode ? "none" : "auto" }}
+      >
         <motion.div
           initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.7, delay: 0.2 }}
           className="relative z-40 mb-8 sm:mb-10 text-xs sm:text-sm tracking-[0.22em] uppercase opacity-70"
         >
-          Arty's Studio
+          {/* Arty's Studio */}
         </motion.div>
 
         <div
@@ -262,14 +334,14 @@ export function Hero({ introReady = true }: HeroProps) {
           onKeyDown={(event) => {
             if (event.key === "Enter" || event.key === " ") {
               event.preventDefault();
-              if (HERO_ASSET_ENABLED) {
+              if (HERO_SCENE_ENABLED) {
                 setIsModelInteractive(true);
               }
             }
           }}
-          role={HERO_ASSET_ENABLED ? "button" : undefined}
-          tabIndex={HERO_ASSET_ENABLED ? 0 : -1}
-          aria-label={HERO_ASSET_ENABLED ? "3D VISUALIZATION PARTNER FOR CREATIVE STUDIOS" : undefined}
+          role={HERO_SCENE_ENABLED ? "button" : undefined}
+          tabIndex={HERO_SCENE_ENABLED ? 0 : -1}
+          aria-label={HERO_SCENE_ENABLED ? "3D VISUALIZATION PARTNER FOR CREATIVE STUDIOS" : undefined}
         >
           <motion.h1
             id="hero-main-title"
@@ -304,10 +376,16 @@ export function Hero({ introReady = true }: HeroProps) {
           initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={shouldReduceMotion ? { duration: 0 } : { delay: 1.2, duration: 0.7 }}
-          className="relative z-40 mt-5 sm:mt-7 text-xs sm:text-sm uppercase tracking-[0.18em] opacity-70"
+          className={`relative z-40 mt-5 sm:mt-7 text-xs sm:text-sm opacity-70 ${
+            isEarthMode && isCompactScreen ? "normal-case tracking-[0.02em] sm:tracking-[0.05em]" : "uppercase tracking-[0.18em]"
+          }`}
         >
-          {HERO_ASSET_ENABLED
-            ? "Hover the headline to cast the reveal. Hold or click to open the landing asset."
+          {HERO_SCENE_ENABLED
+            ? isEarthMode
+              ? isCompactScreen
+                ? "Drag the globe to explore. Scroll or tap Exit Globe to continue browsing."
+                : "Click and drag Earth to explore. Press Esc, scroll, or use Exit Globe to continue browsing."
+              : "Hover the headline to cast the reveal. Hold or click to open the landing asset."
             : ""}
         </motion.p>
 
@@ -340,7 +418,7 @@ export function Hero({ introReady = true }: HeroProps) {
             Let&apos;s Talk
           </motion.a>
 
-          {HERO_ASSET_ENABLED && isModelInteractive && (
+          {HERO_SCENE_ENABLED && isModelInteractive && !isEarthMode && (
             <button
               type="button"
               onClick={() => setIsModelInteractive(false)}
@@ -376,7 +454,33 @@ export function Hero({ introReady = true }: HeroProps) {
             </motion.div>
           ))}
         </motion.div>
-      </div>
+      </motion.div>
+
+      {isEarthMode && !isModelInteractive && (
+        <motion.button
+          type="button"
+          onClick={() => setIsModelInteractive(true)}
+          className="absolute right-4 top-24 z-40 px-4 py-2.5 sm:px-5 sm:py-3 border border-white/35 bg-black/35 text-white uppercase tracking-[0.18em] text-[10px] sm:text-xs md:text-sm backdrop-blur-sm hover:bg-white hover:text-black hover:border-white transition-colors"
+          initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.4, delay: 0.4 }}
+        >
+          Explore Globe
+        </motion.button>
+      )}
+
+      {isEarthMode && isModelInteractive && (
+        <motion.button
+          type="button"
+          onClick={() => setIsModelInteractive(false)}
+          className="absolute right-4 top-24 z-[70] px-4 py-2.5 sm:px-5 sm:py-3 border border-white/45 bg-black/55 text-white uppercase tracking-[0.18em] text-[10px] sm:text-xs md:text-sm backdrop-blur-sm hover:bg-white hover:text-black hover:border-white transition-colors"
+          initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.35 }}
+        >
+          Exit Globe
+        </motion.button>
+      )}
 
       {isShowreelOpen && (
         <motion.div

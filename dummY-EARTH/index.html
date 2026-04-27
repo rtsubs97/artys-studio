@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Connectivity 3D</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000; 
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        #hero-section {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; 
+            padding-left: 8%; 
+            box-sizing: border-box;
+        }
+        #earth-canvas-container {
+            position: absolute;
+            top: 0;
+            right: -10%; 
+            width: 65%; 
+            height: 100%;
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            pointer-events: none;
+            max-width: 600px;
+        }
+        h1 { 
+            font-size: 5rem; 
+            margin-bottom: 0.5rem; 
+            line-height: 1.1;
+            letter-spacing: -2px;
+        }
+        p {
+            font-size: 1.2rem;
+            color: #aaa;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* --- UPGRADED: Studio-Grade Interactive Tooltip --- */
+/* --- UPGRADED: Studio-Grade Interactive Tooltip --- */
+        #tooltip {
+            position: absolute;
+            background: rgba(10, 5, 15, 0.65); /* Deep, dark translucent base */
+            border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle glass edge */
+            border-top: 1px solid rgba(255, 255, 255, 0.15); /* Catching light from above */
+            color: white;
+            padding: 16px 24px;
+            border-radius: 6px; /* Slightly sharper, modern corners */
+            pointer-events: none; 
+            opacity: 0;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Buttery smooth fade */
+            z-index: 200;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(143, 19, 65, 0.15); /* Deep shadow + faint brand glow */
+            transform: translate(-50%, -120%); 
+            backdrop-filter: blur(12px); /* High-end frosted glass effect */
+            -webkit-backdrop-filter: blur(12px);
+            overflow: hidden;
+        }
+
+        /* Sleek brand-colored top accent line */
+        #tooltip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8f1341, transparent);
+        }
+
+        #tooltip h3 { 
+            margin: 0 0 6px 0; 
+            font-size: 1.3rem; 
+            color: #fff; 
+            letter-spacing: -0.5px; /* Tighter tracking for the main heading */
+            font-weight: 700;
+        }
+
+        #tooltip p { 
+            margin: 0; 
+            color: #8f1341; /* Your brand color */
+            font-weight: 600; 
+            font-size: 0.75rem; /* Smaller, more elegant size */
+            letter-spacing: 2.5px; /* Wide cinematic tracking */
+            text-transform: uppercase;
+        }
+        /* Controls Panel */
+        #controls-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.9);
+            border-radius: 12px;
+            border: 1px solid #333;
+            padding: 20px;
+            color: white;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        #controls-panel .control-group {
+            display: grid;
+            grid-template-columns: 140px 1fr 60px;
+            align-items: center;
+            gap: 10px;
+        }
+        #controls-panel label { color: #ccc; }
+        #controls-panel input[type=range] { width: 100%; accent-color: #8f1341; }
+        #controls-panel input[type=checkbox] { accent-color: #8f1341; width: 20px; height: 20px; }
+        #controls-panel .value-display { font-weight: bold; color: #8f1341; text-align: right; }
+        #controls-panel h2 { margin: 0; font-size: 1rem; color: #8f1341; }
+    </style>
+</head>
+<body>
+
+    <section id="hero-section">
+        <div class="hero-content">
+            <h1>GLOBAL<br>REACH</h1>
+            <p>Interactive 3D WebGL Experience</p>
+        </div>
+        <div id="earth-canvas-container"></div>
+        
+        <div id="tooltip"></div>
+
+        <div id="controls-panel">
+            <h2>Global Connectivity 3D</h2>
+            <div class="control-group">
+                <label for="axial-tilt">Axial Tilt (°)</label>
+                <input type="range" id="axial-tilt" min="-45" max="45" step="1" value="16">
+                <span id="axial-tilt-value" class="value-display">16</span>
+            </div>
+            <div class="control-group">
+                <label for="sun-position">Sun Position</label>
+                <input type="range" id="sun-position" min="-1" max="1" step="0.1" value="-1">
+                <span id="sun-position-value" class="value-display">-1</span>
+            </div>
+            <div class="control-group">
+                <label for="rotation-speed">Rotation Speed</label>
+                <input type="range" id="rotation-speed" min="0" max="1" step="0.01" value="0.2">
+                <span id="rotation-speed-value" class="value-display">0.2</span>
+            </div>
+            <div class="control-group">
+                <label for="client-markers">Client Markers</label>
+                <input type="checkbox" id="client-markers" checked>
+            </div>
+        </div>
+    </section>
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.154.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.154.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

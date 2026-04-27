@@ -2,6 +2,7 @@ interface ImportMetaEnv {
   readonly VITE_CONTACT_ENDPOINT?: string;
   readonly VITE_TURNSTILE_SITE_KEY?: string;
   readonly VITE_ENABLE_HERO_ASSET?: "true" | "false";
+  readonly VITE_ENABLE_HERO_EARTH?: "true" | "false";
   readonly VITE_SHOWREEL_EMBED_ID?: string;
 }
 

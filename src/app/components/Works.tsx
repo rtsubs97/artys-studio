@@ -59,17 +59,17 @@ const workItems: WorkItem[] = [
   { id: 20, title: "PHASE 04", discipline: "Product", fileName: "Ph4.mp4", layout: "standard" },
   {
     id: 23,
-    title: "ARCHVIZ OUT 07",
-    discipline: "Architectural",
-    fileName: "Archvizout7.mp4",
+    title: "MASK SEQUENCE 02",
+    discipline: "Product",
+    fileName: "Mask2.mp4",
     layout: "tall",
   },
   { id: 24, title: "ROUTER 02", discipline: "Product", fileName: "Router2.mp4", layout: "standard" },
   {
     id: 25,
-    title: "MASK SEQUENCE 02",
-    discipline: "Product",
-    fileName: "Mask2.mp4",
+    title: "ARCHVIZ OUT 07",
+    discipline: "Architectural",
+    fileName: "Archvizout7.mp4",
     layout: "standard",
     videoScale: 1.12,
     videoPosition: "50% 50%",
@@ -83,7 +83,7 @@ const workItems: WorkItem[] = [
 const MANUAL_TILE_TUNING: Record<number, ManualTileTuning> = {
   2: { videoScale: 1.36, tileSizeClass: "" },
   7: { videoScale: 1.36, videoPosition: "50% 60%", tileSizeClass: "" },
-  25: { videoScale: 1.12, tileSizeClass: "" },
+  23: { videoScale: 1.4, videoPosition: "50% 45%", tileSizeClass: "" },
 };
 
 function applyManualTuning(item: WorkItem): WorkItem {
