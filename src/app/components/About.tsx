@@ -16,7 +16,8 @@ export function About() {
     "Lighting",
     "Animation",
     "Rendering",
-    "Editing"
+    "Editing",
+    "AR/VR"
   ];
 
   const clients = [
